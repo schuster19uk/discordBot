@@ -1,0 +1,18 @@
+CREATE DATABASE discord_bot;
+USE discord_bot;
+
+CREATE TABLE booking_slots (
+    slot_id INT AUTO_INCREMENT PRIMARY KEY,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    booked_by_id VARCHAR(255) DEFAULT NULL,
+    booked_by_name VARCHAR(255) DEFAULT NULL,
+    is_available BOOLEAN DEFAULT TRUE,
+    reminder_sent BOOLEAN DEFAULT FALSE
+);
+
+-- Example Insert:
+INSERT INTO booking_slots (start_time, end_time) 
+VALUES ('2026-05-01 14:00:00', '2026-05-01 15:00:00');
+
+https://discord.com/oauth2/authorize?client_id=1199800067570270259&permissions=268519424&integration_type=0&scope=bot+applications.commands
