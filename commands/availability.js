@@ -106,7 +106,7 @@ module.exports = {
 
                 // 4. Compact Row
                 //list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
-                list += `> 🔹 **Time:** <t:${sUnix}:t>  📝 Book: \`!book${row.slot_id}\`\n`;
+                list += `> 🔹 **Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
             }); 
 
             message.channel.send(list);
