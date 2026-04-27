@@ -71,6 +71,7 @@ CREATE TABLE booking_slots (
     is_available BOOLEAN DEFAULT TRUE,
     reminder_sent BOOLEAN DEFAULT FALSE,
     uk_time_display VARCHAR(100)
+    nevada_time_display VARCHAR(100)
 );
 
 EXIT;

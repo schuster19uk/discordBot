@@ -12,7 +12,8 @@ module.exports = {
                 FROM booking_slots 
                 WHERE is_available = TRUE 
                 AND start_time >= NOW() + INTERVAL 24 HOUR 
-                ORDER BY start_time ASC;`
+                ORDER BY start_time ASC
+                LIMIT 10`
             );
 
             if (rows.length === 0) return message.reply("📅 No available slots.");
