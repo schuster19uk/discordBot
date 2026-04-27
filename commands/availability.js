@@ -8,11 +8,11 @@ module.exports = {
         try {
             conn = await pool.getConnection();
             const rows = await conn.query(
-               `SELECT slot_id, start_time, end_time 
+               `SELECT slot_id, start_time, uk_time_display 
                 FROM booking_slots 
                 WHERE is_available = TRUE 
-                AND start_time >= NOW() 
-                ORDER BY start_time ASC`
+                AND start_time >= NOW() + INTERVAL 24 HOUR 
+                ORDER BY start_time ASC;`
             );
 
             if (rows.length === 0) return message.reply("📅 No available slots.");
