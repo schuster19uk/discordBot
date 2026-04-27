@@ -20,7 +20,7 @@ module.exports = {
 
             if (rows.length === 0) return message.reply("📅 No available slots.");
 
-            let list = "**Available Booking Slots:**\n*The first time is your local time, the second is Nevada time.*\n\n";
+            let list = "**Next 10 Available Booking Slots:**\n*The first time is your local time, the second is Nevada time.*\n\n";
             
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
@@ -34,8 +34,8 @@ module.exports = {
                 // We add the nevada_time_display column at the end of the line
                 list += `**Slot #${row.slot_id}**\n` +
                         `Book: \`!book ${row.slot_id}\`\n` +
-                        `Your Start DateTime: <t:${sUnix}:F> (<t:${eUnix}:t>)\n` +
-                        `Lesage's Time: **${row.nevada_time_display}**\n\n`;
+                        `Your Start DateTime: **<t:${sUnix}:F> (<t:${eUnix}:t>)**\n` +
+                        `Lesage's Time: ${row.nevada_time_display}\n\n`;
             }); 
 
             message.channel.send(list);
