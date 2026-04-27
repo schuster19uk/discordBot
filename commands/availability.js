@@ -8,19 +8,21 @@ module.exports = {
         try {
             conn = await pool.getConnection();
             
-            // Added nevada_time_display to the SELECT
             const rows = await conn.query(
                 `SELECT slot_id, start_time, end_time, nevada_time_display 
                  FROM booking_slots 
                  WHERE is_available = TRUE 
                  AND start_time >= NOW() + INTERVAL 24 HOUR 
                  ORDER BY start_time ASC
-                 LIMIT 10`
+                 LIMIT 5`
             );
 
-            if (rows.length === 0) return message.reply("📅 No available slots.");
+            if (rows.length === 0) return message.reply("📅 No available slots found for the next 30 days.");
 
-            let list = "**Next 10 Available Booking Slots:**\n*The first time is your local time, the second is Nevada time.*\n\n";
+            let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n";
+            list += "📅 **AVAILABLE BOOKING SLOTS**\n";
+            list += "*Times adjust to your device's timezone automatically.*\n";
+            list += "━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
             
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
@@ -31,11 +33,11 @@ module.exports = {
                 const sUnix = Math.floor(start.toSeconds());
                 const eUnix = Math.floor(end.toSeconds());
 
-                // We add the nevada_time_display column at the end of the line
-                list += `**Slot #${row.slot_id}**\n` +
-                        `Book: \`!book ${row.slot_id}\`\n` +
-                        `Your Start DateTime: **<t:${sUnix}:F> (<t:${eUnix}:t>)**\n` +
-                        `Lesage's Time: ${row.nevada_time_display}\n\n`;
+                list += `### 🔹 Slot ID: #${row.slot_id}\n`;
+                list += `> 🕒 **Your Time:** <t:${sUnix}:F>\n`;
+                list += `> 🎲 **Lesage's Time:** \`${row.nevada_time_display}\`\n`;
+                list += `> 📝 **Claim:** \`!book ${row.slot_id}\`\n`;
+                list += `──────────────────\n\n`; // Thin divider between slots
             }); 
 
             message.channel.send(list);
