@@ -19,9 +19,13 @@ module.exports = {
 
             if (rows.length === 0) return message.reply("📅 No available slots found for the next 30 days.");
 
+            // --- HEADER & INSTRUCTIONS ---
             let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n";
             list += "📅 **AVAILABLE BOOKING SLOTS**\n";
-            list += "*Times adjust to your device's timezone automatically.*\n";
+            list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
+            list += "✅ **How to Book:**\n";
+            list += "Type the command in the Claim to book a slot\n";
+            list += "*Example: `!book ${rows[0].slot_id} , the command to type in is displayed in the claim.`*\n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
             
             rows.forEach(row => {
@@ -37,7 +41,7 @@ module.exports = {
                 list += `> 🕒 **Your Time:** <t:${sUnix}:F>\n`;
                 list += `> 🎲 **Lesage's Time:** \`${row.nevada_time_display}\`\n`;
                 list += `> 📝 **Claim:** \`!book ${row.slot_id}\`\n`;
-                list += `──────────────────\n\n`; // Thin divider between slots
+                list += `──────────────────\n\n`;
             }); 
 
             message.channel.send(list);
