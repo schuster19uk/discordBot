@@ -35,7 +35,7 @@ module.exports = {
                 list += `**Slot #${row.slot_id}**\n` +
                         `Book: \`!book ${row.slot_id}\`\n` +
                         `Your Start DateTime: <t:${sUnix}:F> (<t:${eUnix}:t>)\n` +
-                        `Nevada Start: **${row.nevada_time_display}**\n\n`;
+                        `Lesage's Time: **${row.nevada_time_display}**\n\n`;
             }); 
 
             message.channel.send(list);
