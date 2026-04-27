@@ -73,7 +73,7 @@ module.exports = {
                  WHERE is_available = TRUE 
                  AND start_time >= NOW() + INTERVAL 24 HOUR 
                  ORDER BY start_time ASC
-                 LIMIT 15` // Increased limit since the layout is more compact
+                 LIMIT 20`
             );
 
             if (rows.length === 0) return message.reply("📅 No available slots found.");
@@ -84,27 +84,27 @@ module.exports = {
             list += "✅ **To Book:** Type `!book [ID]`\n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
 
-            let lastDate = "";
+            let lastDateLabel = "";
 
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 if (!start.isValid) return;
 
-                const sUnix = Math.floor(start.toSeconds());
-                
-                // Discord Date-Only format: e.g., "May 4, 2026"
-                // We use this to check if we should print a new date header
-                const discordDateHeader = `<t:${sUnix}:d>`; 
-                const discordDayName = `<t:${sUnix}:A>`; // e.g., "Monday"
+                // 1. Get the Date in Nevada for Grouping
+                const nvDate = start.setZone('America/Los_Angeles');
+                const nvDateLabel = nvDate.toFormat('cccc, LLLL dd'); // e.g. "Monday, April 27"
 
-                if (discordDateHeader !== lastDate) {
-                    list += `\n**${discordDayName} — ${discordDateHeader}**\n`;
+                // 2. Get the Unix for User Display
+                const sUnix = Math.floor(start.toSeconds());
+
+                // 3. Print Header ONLY if the Nevada Date changes
+                if (nvDateLabel !== lastDateLabel) {
+                    list += `\n**${nvDateLabel.toUpperCase()}**\n`;
                     list += `──────────────────\n`;
-                    lastDate = discordDateHeader;
+                    lastDateLabel = nvDateLabel;
                 }
 
-                // Compact Slot Row
-                // Format: [ID] Time (NV Time) !book ID
+                // 4. Compact Row
                 list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
             }); 
 
