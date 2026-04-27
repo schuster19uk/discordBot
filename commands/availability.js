@@ -37,8 +37,9 @@ module.exports = {
                 const sUnix = Math.floor(start.toSeconds());
                 const eUnix = Math.floor(end.toSeconds());
 
-                list += `### 🔹 Slot ID: #${row.slot_id} <t:${sUnix}:F> \n`;
-                list += `> 🕒 **Your Local Time:** <t:${sUnix}:F>\n`;
+                //list += `### 🔹 Slot ID (Your Local Time): #${row.slot_id} <t:${sUnix}:F> \n`;
+                list += `### 🔹 Datetime (in your Local Time): <t:${sUnix}:F> \n`;
+                //list += `> 🕒 **Your Local Time:** <t:${sUnix}:F>\n`;
                 list += `> 🎲 **Lesage's Time:** \`${row.nevada_time_display}\`\n`;
                 list += `> 📝 **Claim:** \`!book${row.slot_id}\`\n`;
                 list += `──────────────────\n\n`;
