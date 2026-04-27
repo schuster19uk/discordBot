@@ -23,6 +23,7 @@ module.exports = {
             let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n";
             list += "📅 **AVAILABLE BOOKING SLOTS**\n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
+            list += "*The Timeslots are displayed in your local time and Lesage's Time underneath.*\n";
             list += "✅ **How to Book:**\n";
             list += "Type the command in the Claim to book a slot\n";
             list += "*Example: `!book1`*\n";
