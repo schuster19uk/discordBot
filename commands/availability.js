@@ -40,7 +40,7 @@ module.exports = {
                 list += `### 🔹 Slot ID: #${row.slot_id}\n`;
                 list += `> 🕒 **Your Time:** <t:${sUnix}:F>\n`;
                 list += `> 🎲 **Lesage's Time:** \`${row.nevada_time_display}\`\n`;
-                list += `> 📝 **Claim:** \`!book ${row.slot_id}\`\n`;
+                list += `> 📝 **Claim:** \`!book${row.slot_id}\`\n`;
                 list += `──────────────────\n\n`;
             }); 
 
