@@ -25,7 +25,7 @@ module.exports = {
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
             list += "✅ **How to Book:**\n";
             list += "Type the command in the Claim to book a slot\n";
-            list += "*Example: `!book ${rows[0].slot_id} , the command to type in is displayed in the claim.`*\n";
+            list += "*Example: `!book1`*\n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
             
             rows.forEach(row => {
