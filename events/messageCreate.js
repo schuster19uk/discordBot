@@ -4,6 +4,10 @@ module.exports = {
         // 1. Safety Checks: Ignore bots and direct messages
         if (message.author.bot || !message.guild) return;
 
+        // Channel Guard: Only allow commands in specified channel (or all if set to 0)
+        const COMMAND_CHANNEL_ID = process.env.COMMAND_CHANNEL_ID;
+        if (COMMAND_CHANNEL_ID !== '0' && message.channelId !== COMMAND_CHANNEL_ID) return;
+
         // 2. Handle Exact String Commands 
         // This covers: !bookingavailability and !myslots
         const command = client.commands.get(message.content);

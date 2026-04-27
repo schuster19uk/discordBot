@@ -31,6 +31,9 @@ Bash
 # Install the MariaDB server
 sudo apt install mariadb-server -y
 
+# Install GIT
+sudo apt update && sudo apt install git -y
+
 # Run the security script (Important!)
 sudo mysql_secure_installation
 During the Security Script:
@@ -112,3 +115,29 @@ pm2 start index.js --name "booking-bot"
 pm2 startup
 # (Copy and paste the command that PM2 generates in the terminal)
 pm2 save
+
+
+
+# After Install and setup
+
+# The Standard Restart
+If you just edited your .env file or fixed a small bug in your code, run:
+
+# Bash
+pm2 restart booking-bot
+(Note: If you named your bot something else, use that name. If you forgot the name, type pm2 list to see it.)
+
+2. The "Hard" Restart (Resetting Memory)
+If the bot is acting glitchy or freezing, you can stop it completely and start it fresh:
+
+# Bash
+pm2 stop booking-bot
+pm2 start booking-bot
+
+# Restarting After a Code Update (git pull)
+If you pushed new code from your home PC to GitHub and want to pull it onto the VM:
+
+# Bash
+git pull
+npm install  # Only needed if you added new packages
+pm2 restart booking-bot

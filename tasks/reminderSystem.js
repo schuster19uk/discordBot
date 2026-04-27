@@ -58,6 +58,18 @@ async function checkReminders(client) {
     try {
         conn = await pool.getConnection();
 
+        // Auto-close expired slots
+        try {
+            const result = await conn.query(
+                'UPDATE booking_slots SET is_available = FALSE WHERE start_time < NOW() AND is_available = TRUE'
+            );
+            if (result.affectedRows > 0) {
+                console.log(`[Maintenance] Auto-closed ${result.affectedRows} expired slots.`);
+            }
+        } catch (mErr) {
+            console.warn('[Maintenance] Auto-close update skipped:', mErr.message);
+        }
+
         // 1. Fetch slots starting soon
         // SQL handles the "now" comparison using UTC_TIMESTAMP()
         const upcoming = await conn.query(`
@@ -96,7 +108,7 @@ async function checkReminders(client) {
             }
         }
     } catch (err) {
-        console.error("Reminder Loop Error:", err);
+        console.error('Maintenance Task Error:', err);
     } finally {
         if (conn) conn.release();
     }

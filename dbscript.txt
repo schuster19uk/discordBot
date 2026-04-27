@@ -15,4 +15,4 @@ CREATE TABLE booking_slots (
 INSERT INTO booking_slots (start_time, end_time) 
 VALUES ('2026-05-01 14:00:00', '2026-05-01 15:00:00');
 
-https://discord.com/oauth2/authorize?client_id=1199800067570270259&permissions=268519424&integration_type=0&scope=bot+applications.commands
+
