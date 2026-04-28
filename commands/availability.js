@@ -81,7 +81,7 @@ module.exports = {
             let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n";
             list += "📅 **APPOINTMENTS AVAILABLE**\n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
-            list += "✅ **To Book:** Type e.g. `!book1`\n";
+            list += "✅ **To Book:** Type e.g. `!book1` on the chat window to claim the lesson. \n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
 
             let lastDateLabel = "";
@@ -106,7 +106,7 @@ module.exports = {
 
                 // 4. Compact Row
                 //list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
-                list += `> 🔹 **Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
+                list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
             }); 
 
             message.channel.send(list);
