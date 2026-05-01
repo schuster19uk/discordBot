@@ -181,15 +181,15 @@ module.exports = {
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // Added \n at start and end of these lines
+                    // We use <t:sUnix:D> to fix that hardcoded "04 May 2026"
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`; 
                     lastDateLabel = dateKey;
                 }
 
-                // The \n at the end is MANDATORY to stop the "mushing"
-                // The <t:${sUnix}:t> is MANDATORY to stop the static "01:00" text
-                list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
+                // FIX: Using <t:sUnix:t> makes the time dynamic (underlined)
+                // FIX: Removing the ">" often fixes line-break issues in Discord
+                list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
             });
 
             message.channel.send(list);
