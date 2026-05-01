@@ -84,8 +84,6 @@ module.exports = {
             list += "✅ **To Book:** Type e.g. `!book1` on the chat window to claim the lesson. \n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
 
-            let lastDateLabel = "";
-
             // rows.forEach(row => {
             //     const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
             //     if (!start.isValid) return;
@@ -110,28 +108,32 @@ module.exports = {
             // });
             
             
-            let lastDateKey = ""; 
+            let lastDateLabel = ""; 
 
             rows.forEach(row => {
+                // 1. Convert SQL UTC string to a Luxon object
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 if (!start.isValid) return;
 
+                // 2. Get the absolute Unix seconds (the same everywhere in the world)
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 1. Create a grouping key based on the 'Date' string of the timestamp.
-                // This uses the local time of the machine running the bot.
+                // 3. Generate a 'Date Key' based on the user's local day
+                // We use <t:sUnix:d> which is the short date format (e.g., 04/05/2026).
+                // This serves as our "Day Change" detector.
                 const dateKey = new Date(sUnix * 1000).toLocaleDateString('en-GB'); 
 
-                // 2. Print Header ONLY when that date key changes
-                if (dateKey !== lastDateKey) {
-                    // <t:sUnix:A> = Day (e.g. Monday)
-                    // <t:sUnix:D> = Date (e.g. 27/04/2026)
+                // 4. Print Header ONLY if the date flips for the viewer
+                if (dateKey !== lastDateLabel) {
+                    // <t:sUnix:A> = Full Day Name (Monday)
+                    // <t:sUnix:D> = Full Date (04 May 2026)
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
-                    lastDateKey = dateKey;
+                    lastDateLabel = dateKey;
                 }
 
-                // 3. The Row
+                // 5. The Dynamic Row
+                // <t:sUnix:t> shows ONLY the time (e.g., 20:00 or 8:00 PM) based on user settings
                 list += `> 🔹 **Local:** <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
             });
 
