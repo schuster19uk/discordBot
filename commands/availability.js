@@ -110,29 +110,30 @@ module.exports = {
             // });
             
             
+            let lastDateKey = ""; // Tracks the day change
+
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 if (!start.isValid) return;
 
-                // 1. Get the Unix timestamp (Universal)
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 2. Use a "Date Key" for grouping. 
-                // We use the UTC date string just to detect when we've moved to a new day.
-                const dateKey = start.toFormat('yyyy-MM-dd'); 
+                // 1. Create a grouping key that is unique to the CALENDAR DAY.
+                // Since we want the header to move with the user, we calculate the 
+                // "Midnight" for that specific timestamp.
+                const dateKey = new Date(sUnix * 1000).toDateString(); 
 
-                // 3. Print Header ONLY if the date changes
-                if (dateKey !== lastDateLabel) {
-                    // <t:sUnix:A> = Day of week (Monday)
-                    // <t:sUnix:D> = Date (04/27/2026)
-                    // This header now shifts automatically based on the viewer's timezone!
+                // 2. Print Header ONLY if the calendar day changes for the viewer
+                if (dateKey !== lastDateKey) {
+                    // <t:sUnix:D> prints the full date like "May 4, 2026"
+                    // <t:sUnix:A> prints the day like "Monday"
                     list += `\n**<t:${sUnix}:A>, <t:${sUnix}:D>**\n`;
                     list += `──────────────────\n`;
-                    lastDateLabel = dateKey;
+                    lastDateKey = dateKey;
                 }
 
-                // 4. Compact Row - Also updated to your Slash Command !book format
-                list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`/book id: ${row.slot_id}\`\n`;
+                // 3. The Slot Row
+                list += `> 🔹 **Local:** <t:${sUnix}:t> | **NV:** \`${row.nevada_time_display}\` | \`/book id:${row.slot_id}\`\n`;
             });
 
             message.channel.send(list);
