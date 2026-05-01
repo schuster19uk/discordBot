@@ -181,7 +181,7 @@ module.exports = {
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // We use <t:sUnix:D> to fix that hardcoded "04 May 2026"
+                    // This uses Discord for BOTH the Day of the week and the Date
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`; 
                     lastDateLabel = dateKey;
