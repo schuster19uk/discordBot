@@ -114,19 +114,19 @@ module.exports = {
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 const sUnix = Math.floor(start.toSeconds());
-
-                // Use a DateKey that is strictly numerical to avoid timezone drift in the IF statement
+                
+                // We use a UTC-based key just for the IF statement logic
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // ONLY use tags here. No "04 May 2026" text.
+                    // We use <t:UNIX:D> so Discord handles the date text for us
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
                     lastDateLabel = dateKey;
                 }
 
-                // ONLY use the <t:${sUnix}:t> tag. Do not add "20:00" manually.
-                list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
+                // IMPORTANT: The \n at the very end ensures each slot is on a NEW LINE
+                list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\` \n`;
             });
 
             message.channel.send(list);
