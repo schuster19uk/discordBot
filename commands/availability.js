@@ -169,22 +169,24 @@ module.exports = {
             if (rows.length === 0) return message.reply("📅 No slots found.");
 
             let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n**APPOINTMENTS AVAILABLE**\n━━━━━━━━━━━━━━━━━━━━━━━━\n";
+            
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
+                if (!start.isValid) return;
+
                 const sUnix = Math.floor(start.toSeconds());
-                
-                // We use UTC date only to trigger the header change
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // This tag <t:sUnix:D> makes the date local for EVERY user
-                    list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n──────────────────\n`;
+                    // Headers need \n before and after to stay separated
+                    list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
+                    list += `──────────────────\n`;
                     lastDateLabel = dateKey;
                 }
 
-                // This tag <t:sUnix:t> makes the time local for EVERY user
+                // This \n at the end is what prevents the "mushed" text
                 list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
             });
 
