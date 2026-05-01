@@ -84,54 +84,60 @@ module.exports = {
             list += "✅ **To Book:** Type e.g. `!book1` on the chat window to claim the lesson. \n";
             list += "━━━━━━━━━━━━━━━━━━━━━━━━\n";
 
-            // Ensure there are NO static time strings or "row.uk_time_display" here
-            let lastDateLabel = ""; 
+            // // Ensure there are NO static time strings or "row.uk_time_display" here
+            // let lastDateLabel = ""; 
 
+
+            // rows.forEach(row => {
+            //     const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
+            //     if (!start.isValid) return;
+
+            //     // 1. Get the Date in Nevada for Grouping
+            //     const nvDate = start.setZone('America/Los_Angeles');
+            //     const nvDateLabel = nvDate.toFormat('cccc, LLLL dd'); // e.g. "Monday, April 27"
+
+            //     // 2. Get the Unix for User Display
+            //     const sUnix = Math.floor(start.toSeconds());
+
+            //     // 3. Print Header ONLY if the Nevada Date changes
+            //     if (nvDateLabel !== lastDateLabel) {
+            //         list += `\n**${nvDateLabel.toUpperCase()}**\n`;
+            //         list += `──────────────────\n`;
+            //         lastDateLabel = nvDateLabel;
+            //     }
+
+            //     // 4. Compact Row
+            //     //list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
+            //     list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
+            // });
+            
+            
+
+
+            // 1. Initialize this INSIDE the execute function so it resets every time the command is run
+            let lastDateLabel = ""; 
 
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 if (!start.isValid) return;
 
-                // 1. Get the Date in Nevada for Grouping
-                const nvDate = start.setZone('America/Los_Angeles');
-                const nvDateLabel = nvDate.toFormat('cccc, LLLL dd'); // e.g. "Monday, April 27"
-
-                // 2. Get the Unix for User Display
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 3. Print Header ONLY if the Nevada Date changes
-                if (nvDateLabel !== lastDateLabel) {
-                    list += `\n**${nvDateLabel.toUpperCase()}**\n`;
+                // 2. We group by the YYYY-MM-DD of the UTC time. 
+                // This acts as the "trigger" to create a new section.
+                const dateKey = start.toFormat('yyyy-MM-dd'); 
+
+                if (dateKey !== lastDateLabel) {
+                    // 3. HEADER: We use <t:sUnix:A> (Day) and <t:sUnix:D> (Date)
+                    // This is the "Magic" — Discord will translate this to the viewer's local day.
+                    list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
-                    lastDateLabel = nvDateLabel;
+                    lastDateLabel = dateKey;
                 }
 
-                // 4. Compact Row
-                //list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
-                list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
+                // 4. ROW: Clean format with a newline (\n) at the end to prevent "mushing"
+                list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
             });
-            
-            
-
-
-            // rows.forEach(row => {
-            //     const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
-            //     const sUnix = Math.floor(start.toSeconds());
-                
-            //     // We use a UTC-based key just for the IF statement logic
-            //     const dateKey = start.toFormat('yyyy-MM-dd'); 
-
-            //     if (dateKey !== lastDateLabel) {
-            //         // We use <t:UNIX:D> so Discord handles the date text for us
-            //         list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
-            //         list += `──────────────────\n`;
-            //         lastDateLabel = dateKey;
-            //     }
-
-            //     // IMPORTANT: The \n at the very end ensures each slot is on a NEW LINE
-            //     list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\` \n`;
-            // });
-
             message.channel.send(list);
 
         } catch (err) {
