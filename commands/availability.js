@@ -86,28 +86,54 @@ module.exports = {
 
             let lastDateLabel = "";
 
+            // rows.forEach(row => {
+            //     const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
+            //     if (!start.isValid) return;
+
+            //     // 1. Get the Date in Nevada for Grouping
+            //     const nvDate = start.setZone('America/Los_Angeles');
+            //     const nvDateLabel = nvDate.toFormat('cccc, LLLL dd'); // e.g. "Monday, April 27"
+
+            //     // 2. Get the Unix for User Display
+            //     const sUnix = Math.floor(start.toSeconds());
+
+            //     // 3. Print Header ONLY if the Nevada Date changes
+            //     if (nvDateLabel !== lastDateLabel) {
+            //         list += `\n**${nvDateLabel.toUpperCase()}**\n`;
+            //         list += `──────────────────\n`;
+            //         lastDateLabel = nvDateLabel;
+            //     }
+
+            //     // 4. Compact Row
+            //     //list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
+            //     list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
+            // });
+            
+            
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 if (!start.isValid) return;
 
-                // 1. Get the Date in Nevada for Grouping
-                const nvDate = start.setZone('America/Los_Angeles');
-                const nvDateLabel = nvDate.toFormat('cccc, LLLL dd'); // e.g. "Monday, April 27"
-
-                // 2. Get the Unix for User Display
+                // 1. Get the Unix timestamp (Universal)
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 3. Print Header ONLY if the Nevada Date changes
-                if (nvDateLabel !== lastDateLabel) {
-                    list += `\n**${nvDateLabel.toUpperCase()}**\n`;
+                // 2. Use a "Date Key" for grouping. 
+                // We use the UTC date string just to detect when we've moved to a new day.
+                const dateKey = start.toFormat('yyyy-MM-dd'); 
+
+                // 3. Print Header ONLY if the date changes
+                if (dateKey !== lastDateLabel) {
+                    // <t:sUnix:A> = Day of week (Monday)
+                    // <t:sUnix:D> = Date (04/27/2026)
+                    // This header now shifts automatically based on the viewer's timezone!
+                    list += `\n**<t:${sUnix}:A>, <t:${sUnix}:D>**\n`;
                     list += `──────────────────\n`;
-                    lastDateLabel = nvDateLabel;
+                    lastDateLabel = dateKey;
                 }
 
-                // 4. Compact Row
-                //list += `> **ID: #${row.slot_id}** 🔹 <t:${sUnix}:t> 🎲 \`${row.nevada_time_display}\` 📝 \`!book ${row.slot_id}\`\n`;
-                list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`!book${row.slot_id}\`\n`;
-            }); 
+                // 4. Compact Row - Also updated to your Slash Command !book format
+                list += `> 🔹 **Your Local Time:** <t:${sUnix}:t>  Book: \`/book id: ${row.slot_id}\`\n`;
+            });
 
             message.channel.send(list);
 
