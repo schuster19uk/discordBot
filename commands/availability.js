@@ -156,6 +156,7 @@ const pool = require('../database/pool');
 module.exports = {
     name: 'availability', // IMPORTANT: No "!" here. Just the word.
     async execute(message) {
+        console.log("!!! THE BOT IS RUNNING THE NEW CODE !!!"); // ADD THIS LINE
         let conn;
         try {
             conn = await pool.getConnection();
@@ -180,13 +181,14 @@ module.exports = {
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // Headers need \n before and after to stay separated
+                    // Added \n at start and end of these lines
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
-                    list += `──────────────────\n`;
+                    list += `──────────────────\n`; 
                     lastDateLabel = dateKey;
                 }
 
-                // This \n at the end is what prevents the "mushed" text
+                // The \n at the end is MANDATORY to stop the "mushing"
+                // The <t:${sUnix}:t> is MANDATORY to stop the static "01:00" text
                 list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
             });
 
