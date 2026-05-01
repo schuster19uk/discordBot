@@ -111,30 +111,26 @@ module.exports = {
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
-                // 1. Convert SQL UTC string to a Luxon object
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
                 if (!start.isValid) return;
 
-                // 2. Get the absolute Unix seconds (the same everywhere in the world)
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 3. Generate a 'Date Key' based on the user's local day
-                // We use <t:sUnix:d> which is the short date format (e.g., 04/05/2026).
-                // This serves as our "Day Change" detector.
-                const dateKey = new Date(sUnix * 1000).toLocaleDateString('en-GB'); 
+                // 1. Group by a key that is identical for anyone on the same CALENDAR DAY.
+                // We use a UTC-based date string just as a "trigger" to print a new header.
+                const dateKey = start.toFormat('yyyy-MM-dd'); 
 
-                // 4. Print Header ONLY if the date flips for the viewer
                 if (dateKey !== lastDateLabel) {
-                    // <t:sUnix:A> = Full Day Name (Monday)
-                    // <t:sUnix:D> = Full Date (04 May 2026)
+                    // HEADER: Using ONLY Discord tags so it shifts for the user.
+                    // <t:sUnix:A> = Day (Monday), <t:sUnix:D> = Date (04/05/2026)
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
                     lastDateLabel = dateKey;
                 }
 
-                // 5. The Dynamic Row
-                // <t:sUnix:t> shows ONLY the time (e.g., 20:00 or 8:00 PM) based on user settings
-                list += `> 🔹 **Local:** <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
+                // ROW: Use <t:sUnix:t> for the time. Remove the word "Local:" and the static time string.
+                // This ensures if I am in London I see 20:00, but if I am in NY I see 15:00.
+                list += `> 🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
             });
 
             message.channel.send(list);
