@@ -46,7 +46,7 @@ Say Y (Yes) to: Remove anonymous users, disallow root login remotely, and remove
 Now, let's log into MySQL to create your structure.
 
 Bash
-sudo mariadb -u root -p
+# sudo mariadb -u root -p
 (Enter the password you just created). Once inside the MariaDB prompt, run these:
 
 SQL
