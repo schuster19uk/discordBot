@@ -108,29 +108,25 @@ module.exports = {
             // });
             
             
+            // Ensure there are NO static time strings or "row.uk_time_display" here
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
-                if (!start.isValid) return;
-
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 1. Group by a key that is identical for anyone on the same CALENDAR DAY.
-                // We use a UTC-based date string just as a "trigger" to print a new header.
+                // Use a DateKey that is strictly numerical to avoid timezone drift in the IF statement
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // HEADER: Using ONLY Discord tags so it shifts for the user.
-                    // <t:sUnix:A> = Day (Monday), <t:sUnix:D> = Date (04/05/2026)
+                    // ONLY use tags here. No "04 May 2026" text.
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
                     lastDateLabel = dateKey;
                 }
 
-                // ROW: Use <t:sUnix:t> for the time. Remove the word "Local:" and the static time string.
-                // This ensures if I am in London I see 20:00, but if I am in NY I see 15:00.
-                list += `> 🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
+                // ONLY use the <t:${sUnix}:t> tag. Do not add "20:00" manually.
+                list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
             });
 
             message.channel.send(list);
