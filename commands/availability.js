@@ -114,7 +114,6 @@ module.exports = {
             
 
 
-            // 1. Initialize this INSIDE the execute function so it resets every time the command is run
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
@@ -123,21 +122,22 @@ module.exports = {
 
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 2. We group by the YYYY-MM-DD of the UTC time. 
-                // This acts as the "trigger" to create a new section.
+                // We use a UTC key to trigger the header change
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // 3. HEADER: We use <t:sUnix:A> (Day) and <t:sUnix:D> (Date)
-                    // This is the "Magic" — Discord will translate this to the viewer's local day.
+                    // <t:UNIX:D> prints the date (e.g., 04 May 2026) in the user's local format
                     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
                     lastDateLabel = dateKey;
                 }
 
-                // 4. ROW: Clean format with a newline (\n) at the end to prevent "mushing"
+                // <t:UNIX:t> prints the time (e.g., 20:00) in the user's local format
+                // Added a \n at the end to keep rows separated
                 list += `> <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
             });
+
+
             message.channel.send(list);
 
         } catch (err) {
