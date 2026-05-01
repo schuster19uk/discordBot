@@ -110,7 +110,7 @@ module.exports = {
             // });
             
             
-            let lastDateKey = ""; // Tracks the day change
+            let lastDateKey = ""; 
 
             rows.forEach(row => {
                 const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
@@ -118,22 +118,21 @@ module.exports = {
 
                 const sUnix = Math.floor(start.toSeconds());
 
-                // 1. Create a grouping key that is unique to the CALENDAR DAY.
-                // Since we want the header to move with the user, we calculate the 
-                // "Midnight" for that specific timestamp.
-                const dateKey = new Date(sUnix * 1000).toDateString(); 
+                // 1. Create a grouping key based on the 'Date' string of the timestamp.
+                // This uses the local time of the machine running the bot.
+                const dateKey = new Date(sUnix * 1000).toLocaleDateString('en-GB'); 
 
-                // 2. Print Header ONLY if the calendar day changes for the viewer
+                // 2. Print Header ONLY when that date key changes
                 if (dateKey !== lastDateKey) {
-                    // <t:sUnix:D> prints the full date like "May 4, 2026"
-                    // <t:sUnix:A> prints the day like "Monday"
-                    list += `\n**<t:${sUnix}:A>, <t:${sUnix}:D>**\n`;
+                    // <t:sUnix:A> = Day (e.g. Monday)
+                    // <t:sUnix:D> = Date (e.g. 27/04/2026)
+                    list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`;
                     lastDateKey = dateKey;
                 }
 
-                // 3. The Slot Row
-                list += `> 🔹 **Local:** <t:${sUnix}:t> | **NV:** \`${row.nevada_time_display}\` | \`/book id:${row.slot_id}\`\n`;
+                // 3. The Row
+                list += `> 🔹 **Local:** <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`/book id:${row.slot_id}\`\n`;
             });
 
             message.channel.send(list);
