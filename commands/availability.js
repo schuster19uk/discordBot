@@ -154,7 +154,7 @@ const { DateTime } = require('luxon');
 const pool = require('../database/pool');
 
 module.exports = {
-    name: 'availability',
+    name: 'availability', 
     async execute(message) {
         let conn;
         try {
@@ -163,7 +163,7 @@ module.exports = {
                 `SELECT slot_id, start_time FROM booking_slots 
                  WHERE is_available = TRUE 
                  AND start_time >= NOW() + INTERVAL 24 HOUR 
-                 ORDER BY start_time ASC LIMIT 15` // Reduced to 15 to stay under character limit
+                 ORDER BY start_time ASC LIMIT 15` // Limit to 15 to stay under character limits
             );
 
             if (rows.length === 0) return message.reply("📅 No slots found.");
@@ -172,7 +172,11 @@ module.exports = {
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
-                // ROBUST PARSING: Handles both SQL Strings and JS Date Objects
+                /**
+                 * 1. ROBUST PARSING
+                 * We force UTC because the DB stores in UTC. This ensures 00:30
+                 * is recognized as the "Next Day" regardless of Nevada time.
+                 */
                 let start;
                 if (row.start_time instanceof Date) {
                     start = DateTime.fromJSDate(row.start_time, { zone: 'utc' });
@@ -183,30 +187,30 @@ module.exports = {
                 if (!start.isValid) return;
 
                 const sUnix = Math.floor(start.toSeconds());
+                
+                // 2. THE FIX: Grouping strictly by UTC Date
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // FIX: Removed the invalid :A tag. Using :D for the date.
+                    // This tag <t:sUnix:D> automatically shows the date in the USER'S timezone.
                     list += `\n** <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`; 
                     lastDateLabel = dateKey;
                 }
 
-                // FIX: Clean, short time display
+                // 3. Compact row with localized time
                 list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
             });
 
-            // Final safety check for character limit
+            // 4. Character Limit Check
             if (list.length > 2000) {
-                return message.reply("❌ The list is too long to display. Try a smaller LIMIT in the query.");
+                return message.reply("❌ List too long. Reduce the LIMIT in the SQL query.");
             }
 
             await message.channel.send(list);
-
         } catch (err) {
-            // Check your console/terminal to see the actual error!
-            console.error("DETAILED ERROR:", err);
-            message.reply("❌ System Error. Check bot console for details.");
+            console.error("CRITICAL ERROR:", err);
+            message.reply("❌ System error while loading availability.");
         } finally {
             if (conn) conn.release();
         }
