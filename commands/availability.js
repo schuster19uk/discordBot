@@ -154,9 +154,8 @@ const { DateTime } = require('luxon');
 const pool = require('../database/pool');
 
 module.exports = {
-    name: 'availability', // IMPORTANT: No "!" here. Just the word.
+    name: 'availability',
     async execute(message) {
-        console.log("!!! THE BOT IS RUNNING THE NEW CODE !!!"); // ADD THIS LINE
         let conn;
         try {
             conn = await pool.getConnection();
@@ -164,59 +163,50 @@ module.exports = {
                 `SELECT slot_id, start_time FROM booking_slots 
                  WHERE is_available = TRUE 
                  AND start_time >= NOW() + INTERVAL 24 HOUR 
-                 ORDER BY start_time ASC LIMIT 20`
+                 ORDER BY start_time ASC LIMIT 15` // Reduced to 15 to stay under character limit
             );
 
             if (rows.length === 0) return message.reply("📅 No slots found.");
 
             let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n**APPOINTMENTS AVAILABLE**\n━━━━━━━━━━━━━━━━━━━━━━━━\n";
-            
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
-                // const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
-                // if (!start.isValid) return;
+                // ROBUST PARSING: Handles both SQL Strings and JS Date Objects
+                let start;
+                if (row.start_time instanceof Date) {
+                    start = DateTime.fromJSDate(row.start_time, { zone: 'utc' });
+                } else {
+                    start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
+                }
 
-                // const sUnix = Math.floor(start.toSeconds());
-                
-                // // dateKey remains UTC-based just to detect when we need a new Header
-                // const dateKey = start.toFormat('yyyy-MM-dd'); 
+                if (!start.isValid) return;
 
-                // if (dateKey !== lastDateLabel) {
-                //     // FIX: We use <t:sUnix:D> instead of any hardcoded "04 May" text.
-                //     // This tag handles the date (Month, Day, Year) automatically.
-                //     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
-                //     list += `──────────────────\n`; 
-                //     lastDateLabel = dateKey;
-                // }
-
-                // // FIX: Using <t:sUnix:t> ensures the time (e.g., 20:00) is also dynamic.
-                // // The \n at the end prevents the "mushing" shown in your screenshot.
-                // list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
-                // ... inside your rows.forEach loop
                 const sUnix = Math.floor(start.toSeconds());
-
-                // dateKey remains UTC-based just to detect when we need a new Header
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // FIX: Removed the invalid <t:sUnix:A> tag. 
-                    // <t:sUnix:D> will show the date (e.g., "May 4, 2026") 
-                    // <t:sUnix:F> would show "Monday, May 4, 2026 8:00 PM"
+                    // FIX: Removed the invalid :A tag. Using :D for the date.
                     list += `\n** <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`; 
                     lastDateLabel = dateKey;
                 }
 
-                // <t:sUnix:t> correctly shows the short time (e.g., "20:00")
+                // FIX: Clean, short time display
                 list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
-
             });
 
-            message.channel.send(list);
+            // Final safety check for character limit
+            if (list.length > 2000) {
+                return message.reply("❌ The list is too long to display. Try a smaller LIMIT in the query.");
+            }
+
+            await message.channel.send(list);
+
         } catch (err) {
-            console.error(err);
-            message.reply("❌ Error.");
+            // Check your console/terminal to see the actual error!
+            console.error("DETAILED ERROR:", err);
+            message.reply("❌ System Error. Check bot console for details.");
         } finally {
             if (conn) conn.release();
         }
