@@ -254,8 +254,8 @@ module.exports = {
                  * <t:sUnix:F> displays "Monday, 4 May 2026 20:00"
                  * This automatically handles the user's language and timezone
                  */
-                list += `🔹 <t:${sUnix}:F>\n` +
-                        `   **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n` +
+                list += `🔹 <t:${sUnix}:F>` +
+                        `\`!book${row.slot_id}\` \n` +
                         `──────────────────\n`;
             });
 
