@@ -255,7 +255,7 @@ module.exports = {
                  * This automatically handles the user's language and timezone
                  */
                 list += `🔹 <t:${sUnix}:F> \n` +
-                        `\`!book${row.slot_id}\` \n` +
+                        `🔹 \`!book${row.slot_id}\` \n` +
                         `──────────────────\n`;
             });
 
