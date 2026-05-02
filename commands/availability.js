@@ -230,7 +230,7 @@ module.exports = {
                 `SELECT slot_id, start_time FROM booking_slots 
                  WHERE is_available = TRUE 
                  AND start_time >= NOW() + INTERVAL 24 HOUR 
-                 ORDER BY start_time ASC LIMIT 15`
+                 ORDER BY start_time ASC LIMIT 20`
             );
 
             if (rows.length === 0) return message.reply("📅 No slots found.");
@@ -239,6 +239,7 @@ module.exports = {
 
             rows.forEach(row => {
                 let start;
+                // Handle both SQL strings and JS Date objects[cite: 3, 6]
                 if (row.start_time instanceof Date) {
                     start = DateTime.fromJSDate(row.start_time, { zone: 'utc' });
                 } else {
@@ -249,19 +250,24 @@ module.exports = {
                 const sUnix = Math.floor(start.toSeconds());
 
                 /**
-                 * BY REMOVING HEADERS:
-                 * We use <t:sUnix:f> which shows "May 5, 2026 12:30 AM".
-                 * This is the only way to be 100% accurate for every user
-                 * regardless of their timezone's midnight rollover.
+                 * FORMATTING:
+                 * <t:sUnix:F> displays "Monday, 4 May 2026 20:00"
+                 * This automatically handles the user's language and timezone
                  */
-                list += `🔹 **ID:** \`#${row.slot_id}\` | <t:${sUnix}:f> | \`!book${row.slot_id}\` \n`;
-                list += `──────────────────\n`;
+                list += `🔹 <t:${sUnix}:F>\n` +
+                        `   **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n` +
+                        `──────────────────\n`;
             });
+
+            // Ensure the message doesn't exceed Discord's 2000-character limit
+            if (list.length > 2000) {
+                return message.reply("❌ List is too long. Try a lower LIMIT in the query.");
+            }
 
             await message.channel.send(list);
         } catch (err) {
             console.error("ERROR:", err);
-            message.reply("❌ Error loading slots.");
+            message.reply("❌ Error loading availability.");
         } finally {
             if (conn) conn.release();
         }
