@@ -174,25 +174,43 @@ module.exports = {
             let lastDateLabel = ""; 
 
             rows.forEach(row => {
-                const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
-                if (!start.isValid) return;
+                // const start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
+                // if (!start.isValid) return;
 
-                const sUnix = Math.floor(start.toSeconds());
+                // const sUnix = Math.floor(start.toSeconds());
                 
+                // // dateKey remains UTC-based just to detect when we need a new Header
+                // const dateKey = start.toFormat('yyyy-MM-dd'); 
+
+                // if (dateKey !== lastDateLabel) {
+                //     // FIX: We use <t:sUnix:D> instead of any hardcoded "04 May" text.
+                //     // This tag handles the date (Month, Day, Year) automatically.
+                //     list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
+                //     list += `──────────────────\n`; 
+                //     lastDateLabel = dateKey;
+                // }
+
+                // // FIX: Using <t:sUnix:t> ensures the time (e.g., 20:00) is also dynamic.
+                // // The \n at the end prevents the "mushing" shown in your screenshot.
+                // list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
+                // ... inside your rows.forEach loop
+                const sUnix = Math.floor(start.toSeconds());
+
                 // dateKey remains UTC-based just to detect when we need a new Header
                 const dateKey = start.toFormat('yyyy-MM-dd'); 
 
                 if (dateKey !== lastDateLabel) {
-                    // FIX: We use <t:sUnix:D> instead of any hardcoded "04 May" text.
-                    // This tag handles the date (Month, Day, Year) automatically.
-                    list += `\n** <t:${sUnix}:A>, <t:${sUnix}:D> **\n`;
+                    // FIX: Removed the invalid <t:sUnix:A> tag. 
+                    // <t:sUnix:D> will show the date (e.g., "May 4, 2026") 
+                    // <t:sUnix:F> would show "Monday, May 4, 2026 8:00 PM"
+                    list += `\n** <t:${sUnix}:D> **\n`;
                     list += `──────────────────\n`; 
                     lastDateLabel = dateKey;
                 }
 
-                // FIX: Using <t:sUnix:t> ensures the time (e.g., 20:00) is also dynamic.
-                // The \n at the end prevents the "mushing" shown in your screenshot.
+                // <t:sUnix:t> correctly shows the short time (e.g., "20:00")
                 list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
+
             });
 
             message.channel.send(list);
