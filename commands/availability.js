@@ -150,6 +150,73 @@
 // };
 
 
+// const { DateTime } = require('luxon');
+// const pool = require('../database/pool');
+
+// module.exports = {
+//     name: 'availability', 
+//     async execute(message) {
+//         let conn;
+//         try {
+//             conn = await pool.getConnection();
+//             const rows = await conn.query(
+//                 `SELECT slot_id, start_time FROM booking_slots 
+//                  WHERE is_available = TRUE 
+//                  AND start_time >= NOW() + INTERVAL 24 HOUR 
+//                  ORDER BY start_time ASC LIMIT 15` // Limit to 15 to stay under character limits
+//             );
+
+//             if (rows.length === 0) return message.reply("📅 No slots found.");
+
+//             let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n**APPOINTMENTS AVAILABLE**\n━━━━━━━━━━━━━━━━━━━━━━━━\n";
+//             let lastDateLabel = ""; 
+
+//             rows.forEach(row => {
+//                 /**
+//                  * 1. ROBUST PARSING
+//                  * We force UTC because the DB stores in UTC. This ensures 00:30
+//                  * is recognized as the "Next Day" regardless of Nevada time.
+//                  */
+//                 let start;
+//                 if (row.start_time instanceof Date) {
+//                     start = DateTime.fromJSDate(row.start_time, { zone: 'utc' });
+//                 } else {
+//                     start = DateTime.fromSQL(row.start_time, { zone: 'utc' });
+//                 }
+
+//                 if (!start.isValid) return;
+
+//                 const sUnix = Math.floor(start.toSeconds());
+                
+//                 // 2. THE FIX: Grouping strictly by UTC Date
+//                 const dateKey = start.toFormat('yyyy-MM-dd'); 
+
+//                 if (dateKey !== lastDateLabel) {
+//                     // This tag <t:sUnix:D> automatically shows the date in the USER'S timezone.
+//                     list += `\n** <t:${sUnix}:D> **\n`;
+//                     list += `──────────────────\n`; 
+//                     lastDateLabel = dateKey;
+//                 }
+
+//                 // 3. Compact row with localized time
+//                 list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
+//             });
+
+//             // 4. Character Limit Check
+//             if (list.length > 2000) {
+//                 return message.reply("❌ List too long. Reduce the LIMIT in the SQL query.");
+//             }
+
+//             await message.channel.send(list);
+//         } catch (err) {
+//             console.error("CRITICAL ERROR:", err);
+//             message.reply("❌ System error while loading availability.");
+//         } finally {
+//             if (conn) conn.release();
+//         }
+//     }
+// };
+
 const { DateTime } = require('luxon');
 const pool = require('../database/pool');
 
@@ -163,20 +230,14 @@ module.exports = {
                 `SELECT slot_id, start_time FROM booking_slots 
                  WHERE is_available = TRUE 
                  AND start_time >= NOW() + INTERVAL 24 HOUR 
-                 ORDER BY start_time ASC LIMIT 15` // Limit to 15 to stay under character limits
+                 ORDER BY start_time ASC LIMIT 15`
             );
 
             if (rows.length === 0) return message.reply("📅 No slots found.");
 
-            let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n**APPOINTMENTS AVAILABLE**\n━━━━━━━━━━━━━━━━━━━━━━━━\n";
-            let lastDateLabel = ""; 
+            let list = "━━━━━━━━━━━━━━━━━━━━━━━━\n**APPOINTMENTS AVAILABLE**\n*(All times localized to your device)*\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
 
             rows.forEach(row => {
-                /**
-                 * 1. ROBUST PARSING
-                 * We force UTC because the DB stores in UTC. This ensures 00:30
-                 * is recognized as the "Next Day" regardless of Nevada time.
-                 */
                 let start;
                 if (row.start_time instanceof Date) {
                     start = DateTime.fromJSDate(row.start_time, { zone: 'utc' });
@@ -185,32 +246,22 @@ module.exports = {
                 }
 
                 if (!start.isValid) return;
-
                 const sUnix = Math.floor(start.toSeconds());
-                
-                // 2. THE FIX: Grouping strictly by UTC Date
-                const dateKey = start.toFormat('yyyy-MM-dd'); 
 
-                if (dateKey !== lastDateLabel) {
-                    // This tag <t:sUnix:D> automatically shows the date in the USER'S timezone.
-                    list += `\n** <t:${sUnix}:D> **\n`;
-                    list += `──────────────────\n`; 
-                    lastDateLabel = dateKey;
-                }
-
-                // 3. Compact row with localized time
-                list += `🔹 <t:${sUnix}:t> | **ID:** \`#${row.slot_id}\` | \`!book${row.slot_id}\` \n`;
+                /**
+                 * BY REMOVING HEADERS:
+                 * We use <t:sUnix:f> which shows "May 5, 2026 12:30 AM".
+                 * This is the only way to be 100% accurate for every user
+                 * regardless of their timezone's midnight rollover.
+                 */
+                list += `🔹 **ID:** \`#${row.slot_id}\` | <t:${sUnix}:f> | \`!book${row.slot_id}\` \n`;
+                list += `──────────────────\n`;
             });
-
-            // 4. Character Limit Check
-            if (list.length > 2000) {
-                return message.reply("❌ List too long. Reduce the LIMIT in the SQL query.");
-            }
 
             await message.channel.send(list);
         } catch (err) {
-            console.error("CRITICAL ERROR:", err);
-            message.reply("❌ System error while loading availability.");
+            console.error("ERROR:", err);
+            message.reply("❌ Error loading slots.");
         } finally {
             if (conn) conn.release();
         }
